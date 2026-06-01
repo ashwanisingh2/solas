@@ -1,0 +1,114 @@
+{
+  "users": [
+    {
+      "id": "default-student-id",
+      "supabaseId": "mock-supabase-student-id",
+      "email": "student@guruai.local",
+      "name": "Aarav Patel",
+      "roles": [
+        "STUDENT"
+      ],
+      "createdAt": "2026-06-01T11:31:56.487Z",
+      "updatedAt": "2026-06-01T11:31:56.487Z"
+    }
+  ],
+  "incidentSessions": [
+    {
+      "id": "sess_wx86950no",
+      "createdAt": "2026-06-01T11:31:58.162Z",
+      "updatedAt": "2026-06-01T11:31:58.162Z",
+      "userId": "default-student-id",
+      "role": "IT Support Engineer",
+      "title": "DNS Name Resolution Outage",
+      "domain": "WINDOWS",
+      "symptoms": "Users cannot access internet sites or internal web portals. Pinging IP addresses works, but pinging hostnames fails.",
+      "expectedRca": "The DNS Server service on the Domain Controller crashed because of a corrupted zone file journal (.dns.jnl) during a dynamic update stream.",
+      "status": "INVESTIGATING",
+      "timeElapsed": 0,
+      "financialLoss": 0,
+      "activeCommanderRole": "CTO",
+      "alerts": [
+        {
+          "id": "al-dns-1",
+          "severity": "CRITICAL",
+          "service": "DNS Server",
+          "message": "DNS Server Service (dns.exe) is Stopped on DC-01",
+          "timestamp": "0m ago"
+        },
+        {
+          "id": "al-dns-2",
+          "severity": "CRITICAL",
+          "service": "Internal Resolvers",
+          "message": "Name resolution lookup timeouts detected on subnet 10.10.10.0/24",
+          "timestamp": "2m ago"
+        }
+      ],
+      "logs": [
+        "[2026-06-01 16:42:15] [EVENT_VIEWER] [SYSTEM] ERROR: DNS Server service terminated unexpectedly. Event ID 7034.",
+        "[2026-06-01 16:42:20] [EVENT_VIEWER] [DNS] ERROR: DNS server was unable to parse database journal for zone 'guruai.local'. Reading file 'guruai.local.dns.jnl' failed at line 1402."
+      ],
+      "timeline": [
+        {
+          "time": "2026-06-01T11:31:58.161Z",
+          "description": "Incident reported: DNS Name Resolution Outage",
+          "type": "ALERT"
+        }
+      ],
+      "chatHistory": [
+        {
+          "sender": "CTO",
+          "role": "CTO",
+          "text": "Hi Aarav, we are experiencing a critical outage with \"DNS Name Resolution Outage\". Clients are reporting errors and it's affecting our core service level. Can you look into this immediately?",
+          "timestamp": "2026-06-01T11:31:58.161Z"
+        }
+      ],
+      "commandsRun": [],
+      "communicationLogs": []
+    },
+    {
+      "id": "sess_7qon9d6qs",
+      "createdAt": "2026-06-01T11:39:29.832Z",
+      "updatedAt": "2026-06-01T11:39:29.832Z",
+      "userId": "default-student-id",
+      "role": "Cloud Engineer",
+      "title": "GPO Corrupted Sysvol Outage",
+      "domain": "WINDOWS",
+      "symptoms": "Workstations are failing to apply domain security baselines. Drive maps, desktop wallpapers, and proxy configurations are missing. Windows event log shows SYSVOL path errors.",
+      "expectedRca": "A dynamic file replication system (DFSR) collision corrupted the GPT.INI file in the Sysvol folder structure of the primary Domain Controller, breaking group policy validation.",
+      "status": "INVESTIGATING",
+      "timeElapsed": 0,
+      "financialLoss": 0,
+      "activeCommanderRole": "CTO",
+      "alerts": [
+        {
+          "id": "al-gpo-1",
+          "severity": "CRITICAL",
+          "service": "Group Policy",
+          "message": "GPO SYSVOL Version Mismatch detected across DCs",
+          "timestamp": "1m ago"
+        }
+      ],
+      "logs": [
+        "[2026-06-01 16:20:00] [DFSR] ERROR: DFSR failed to replicate SYSVOL due to shared access violation or file corruption on path \\\\guruai.local\\sysvol\\guruai.local\\Policies\\{31B2F340-016D-11D2-945F-00C04FB984F9}\\gpt.ini.",
+        "[2026-06-01 16:21:40] [CLIENT_GPO] EventID 1058: Windows cannot access the file gpt.ini for GPO. Access is denied or corrupt."
+      ],
+      "timeline": [
+        {
+          "time": "2026-06-01T11:39:29.820Z",
+          "description": "Incident reported: GPO Corrupted Sysvol Outage",
+          "type": "ALERT"
+        }
+      ],
+      "chatHistory": [
+        {
+          "sender": "CTO",
+          "role": "CTO",
+          "text": "Hi Aarav, we are experiencing a critical outage with \"GPO Corrupted Sysvol Outage\". Clients are reporting errors and it's affecting our core service level. Can you look into this immediately?",
+          "timestamp": "2026-06-01T11:39:29.831Z"
+        }
+      ],
+      "commandsRun": [],
+      "communicationLogs": []
+    }
+  ]
+}

@@ -1,0 +1,251 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  MENTOR
+  CONTENT_ADMIN
+  PLATFORM_ADMIN
+  FINANCE_ADMIN
+}
+
+enum Track {
+  IT_SUPPORT
+  SYSTEM_ADMINISTRATION
+  SYSTEM_ENGINEERING
+  NETWORK_ENGINEERING
+  CLOUD_ENGINEERING
+  DEVOPS_ENGINEERING
+}
+
+enum LabDomain {
+  WINDOWS
+  LINUX
+  CLOUD
+  DEVOPS
+}
+
+enum IncidentDomain {
+  LAPTOP
+  OUTLOOK
+  PRINTER
+  DNS
+  VPN
+  ACTIVE_DIRECTORY
+  SERVER
+  CLOUD
+}
+
+model User {
+  id            String         @id @default(cuid())
+  supabaseId    String         @unique
+  email         String         @unique
+  name          String
+  roles         UserRole[]     @default([STUDENT])
+  profile       LearnerProfile?
+  assessments   AssessmentAttempt[]
+  labSessions   LabSession[]
+  projectRuns   ProjectRun[]
+  interviews    InterviewSession[]
+  incidentSessions IncidentSession[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model LearnerProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetTrack       Track
+  weeklyStudyHours  Int
+  languagePreference String  @default("hinglish")
+  mentorMode        String   @default("friendly")
+  learningSpeed     Float    @default(1)
+  jobReadinessScore Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Skill {
+  id          String          @id
+  title       String
+  domain      String
+  track       Track
+  level       Int
+  description String
+  parentEdges SkillEdge[]     @relation("SkillParent")
+  childEdges  SkillEdge[]     @relation("SkillChild")
+  progress    SkillProgress[]
+}
+
+model SkillEdge {
+  id        String @id @default(cuid())
+  parentId  String
+  childId   String
+  parent    Skill  @relation("SkillParent", fields: [parentId], references: [id], onDelete: Cascade)
+  child     Skill  @relation("SkillChild", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, childId])
+}
+
+model SkillProgress {
+  id              String   @id @default(cuid())
+  userId          String
+  skillId         String
+  mastery         Int      @default(0)
+  confidence      Int      @default(0)
+  mistakeMemory   Json     @default("[]")
+  lastEvidence    String?
+  updatedAt       DateTime @updatedAt
+  skill           Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model AssessmentAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track     Track
+  score     Int
+  evidence  Json
+  createdAt DateTime @default(now())
+}
+
+model Lab {
+  id          String       @id
+  domain      LabDomain
+  title       String
+  topic       String
+  difficulty  Int
+  objective   String
+  validation  Json
+  sessions    LabSession[]
+}
+
+model LabSession {
+  id        String   @id @default(cuid())
+  userId    String
+  labId     String
+  status    String   @default("assigned")
+  score     Int      @default(0)
+  evidence  Json     @default("{}")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lab       Lab      @relation(fields: [labId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IncidentTemplate {
+  id          String         @id
+  domain      IncidentDomain
+  title       String
+  symptoms    String
+  expectedRca String
+  proofSteps  Json
+  difficulty  Int
+}
+
+model CompanyEnvironment {
+  id          String   @id
+  name        String
+  usersCount  Int
+  systems     Json
+  network     Json
+  cloud       Json
+  security    Json
+  createdAt   DateTime @default(now())
+}
+
+model IncidentSession {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role                String   // e.g. "DevOps Engineer"
+  title               String   // e.g. "Kubernetes CrashLoopBackOff"
+  domain              IncidentDomain
+  symptoms            String
+  expectedRca         String
+  status              String   // "INVESTIGATING", "RESOLVED", "FAILED"
+  timeElapsed         Int      @default(0) // seconds
+  financialLoss       Int      @default(0) // USD
+  activeCommanderRole String   @default("CTO") // "CTO" | "Manager" | "Customer" | "Security Team" | "Network Team"
+  alerts              Json     // Array of active alerts
+  logs                Json     // Simulated log entries
+  timeline            Json     // Array of events: { time, description, type }
+  chatHistory         Json     // Array of messages: { sender, role, text, timestamp }
+  commandsRun         Json     // Array of commands: { command, output, timestamp }
+  rootCauseDiagnosis  String?  // User's diagnosed root cause
+  remediationAction   String?  // User's applied remediation
+  communicationLogs   Json     // Logs of status updates sent to CTO, Customer, etc.
+  score               Int      @default(0)
+  scoresBreakdown     Json?    // { speed, rcaAccuracy, resolutionQuality, communication, prevention }
+  postIncidentReport  Json?    // { rca, impactAnalysis, lessonsLearned, preventiveActions, summary }
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ProjectTemplate {
+  id          String       @id
+  title       String
+  track       Track
+  objective   String
+  milestones  Json
+  rubric      Json
+  runs        ProjectRun[]
+}
+
+model ProjectRun {
+  id        String          @id @default(cuid())
+  userId    String
+  projectId String
+  status    String          @default("assigned")
+  score     Int             @default(0)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   ProjectTemplate @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+}
+
+model InterviewSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  track     Track
+  score     Int      @default(0)
+  feedback  Json     @default("{}")
+  createdAt DateTime @default(now())
+}
+
+model CareerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  resumeJson  Json     @default("{}")
+  atsScore    Int      @default(0)
+  linkedInUrl String?
+  gaps        Json     @default("[]")
+  updatedAt   DateTime @updatedAt
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  event     String
+  payload   Json
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  resource  String
+  payload   Json
+  createdAt DateTime @default(now())
+}
